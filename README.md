@@ -10,10 +10,10 @@
 ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚═╝     ╚═╝╚══════╝
 ```
 
-# Prisme 🏆
+# Prisme AI
 ### Zero-Touch Data Onboarding for Splunk
 
-**Built for the Splunk Agentic Ops Hackathon 2026**
+**Built for the Splunk Agentic Ops Hackathon 2026 ❤️**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Splunk](https://img.shields.io/badge/Splunk-Enterprise-FF4C00?style=for-the-badge&logo=splunk&logoColor=white)](https://splunk.com)
@@ -62,9 +62,9 @@ Paste one log line. Prisme's 120B-parameter brain analyzes the structure, maps e
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRISME AGENT SYSTEM                      │
-│                                                             │
+┌────────────────────────────────────────────────────────────┐
+│                    PRISME AGENT SYSTEM                     │
+│                                                            │
 │  ┌──────────────┐    ┌─────────────────┐    ┌───────────┐  │
 │  │  Streamlit   │    │  LangChain      │    │  Splunk   │  │
 │  │  Dark UI     │───►│  Agent Core     │───►│  REST API │  │
@@ -74,7 +74,7 @@ Paste one log line. Prisme's 120B-parameter brain analyzes the structure, maps e
 │  │  • Push btn  │    │    thought      │    │  • reload │  │
 │  └──────────────┘    │  • Self-verify  │    └───────────┘  │
 │                      └────────┬────────┘                   │
-│                               │                             │
+│                               │                            │
 │                      ┌────────▼────────┐                   │
 │                      │  gpt-oss:120b   │                   │
 │                      │  Ollama Cloud   │                   │
@@ -83,7 +83,7 @@ Paste one log line. Prisme's 120B-parameter brain analyzes the structure, maps e
 │                      │  • Regex gen    │                   │
 │                      │  • SPL crafting │                   │
 │                      └─────────────────┘                   │
-└─────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Roles
@@ -205,7 +205,7 @@ Navigate to `http://localhost:8501`.
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  PRISME                              ● CONNECTED  │
+│  PRISME                              ● CONNECTED │
 ├──────────────────────────────────────────────────┤
 │                                                  │
 │  Paste your raw log sample:                      │
@@ -213,16 +213,16 @@ Navigate to `http://localhost:8501`.
 │  │ 2026-06-12T14:33:01Z WARN nginx[3821]: ... │  │
 │  └────────────────────────────────────────────┘  │
 │                                                  │
-│  [ 🔍 Analyze & Push to Splunk ]                 │
+│  [ 🔍 Analyze & Push to Splunk ]                │
 │                                                  │
 │  Agent Output ──────────────────────────────     │
-│  ✓ Log format identified: nginx combined         │
+│  ✓ Log format identified: nginx combined        │
 │  ✓ 7 CIM fields mapped                          │
 │  ✓ Regex validated (0 misses on sample)         │
 │  ✓ props.conf pushed → splunk reload triggered  │
-│                                                  │
-│  Time elapsed: 2.8s                              │
-└──────────────────────────────────────────────────┘
+│                                                 │
+│  Time elapsed: 2.8s                             │
+└─────────────────────────────────────────────────┘
 ```
 
 1. Paste any raw log string into the input box.
@@ -239,12 +239,6 @@ prisme/
 ├── app.py                 # Streamlit UI entrypoint
 ├── agent.py               # LangChain agent definition + tool binding
 ├── splunk_connect.py      # Splunk REST API client
-├── tools/
-│   ├── regex_builder.py   # Regex generation + validation tool
-│   ├── cim_mapper.py      # Field → CIM mapping tool
-│   └── conf_writer.py     # props.conf / transforms.conf generator
-├── prompts/
-│   └── system_prompt.txt  # Agent system prompt (tuned for Splunk CIM)
 ├── requirements.txt
 ├── .env.example
 └── README.md
