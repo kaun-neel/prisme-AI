@@ -99,7 +99,6 @@ graph LR
 | `app.py` | Streamlit frontend — dark SaaS UI, log input, real-time agent output stream |
 | `agent.py` | LangChain agent orchestration — tool routing, chain-of-thought, self-verification loop |
 | `splunk_connect.py` | Splunk REST client — authenticates, pushes config, triggers live reload |
-| `tools/` | Agent toolset — regex builder, CIM mapper, `props.conf` generator |
 | `.env` | Credentials — Splunk token, Ollama endpoint |
 
 ---
