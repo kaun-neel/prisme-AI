@@ -72,12 +72,12 @@ graph LR
     classDef splunk fill:#111113,stroke:#ec4899,stroke-width:2px,color:#fff;
 
     %% Nodes
-    User((👨‍💻 Developer)):::user
-    UI[🖥️ Streamlit App<br/>Prisme UI]:::frontend
-    LangChain[🧠 LangChain Agent<br/>agent_brain.py]:::brain
-    Ollama[(🤖 Ollama Cloud<br/>gpt-oss:120b)]:::llm
-    Connector[🔌 Splunk Connector<br/>REST API Payload Builder]:::brain
-    Splunk[(🔥 Splunk Enterprise<br/>Local Engine port 8089)]:::splunk
+    User((Developer)):::user
+    UI[Streamlit App<br/>Prisme UI]:::frontend
+    LangChain[LangChain Agent<br/>agent_brain.py]:::brain
+    Ollama[(Ollama Cloud<br/>gpt-oss:120b)]:::llm
+    Connector[Splunk Connector<br/>REST API Payload Builder]:::brain
+    Splunk[(Splunk Enterprise<br/>Local Engine port 8089)]:::splunk
 
     %% Edges / Data Flow
     User -- "1. Inputs Raw Logs/Code" --> UI
