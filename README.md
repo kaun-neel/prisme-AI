@@ -10,6 +10,7 @@
 </pre>
 
 
+
 # Prisme AI
 ### Zero-Touch Data Onboarding for Splunk
 
@@ -61,29 +62,34 @@ Paste one log line. Prisme's 120B-parameter brain analyzes the structure, maps e
 
 ## Architecture
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                    PRISME AGENT SYSTEM                     │
-│                                                            │
-│  ┌──────────────┐    ┌─────────────────┐    ┌───────────┐  │
-│  │  Streamlit   │    │  LangChain      │    │  Splunk   │  │
-│  │  Dark UI     │───►│  Agent Core     │───►│  REST API │  │
-│  │              │    │                 │    │  :8089    │  │
-│  │  • Log input │    │  • Tool calls   │    │           │  │
-│  │  • Live diff │    │  • Chain-of-    │    │  • props  │  │
-│  │  • Push btn  │    │    thought      │    │  • reload │  │
-│  └──────────────┘    │  • Self-verify  │    └───────────┘  │
-│                      └────────┬────────┘                   │
-│                               │                            │
-│                      ┌────────▼────────┐                   │
-│                      │  gpt-oss:120b   │                   │
-│                      │  Ollama Cloud   │                   │
-│                      │                 │                   │
-│                      │  • CIM mapping  │                   │
-│                      │  • Regex gen    │                   │
-│                      │  • SPL crafting │                   │
-│                      └─────────────────┘                   │
-└────────────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    %% Styling
+    classDef user fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff;
+    classDef frontend fill:#09090b,stroke:#a855f7,stroke-width:2px,color:#fff;
+    classDef brain fill:#18181b,stroke:#d8b4fe,stroke-width:2px,color:#fff;
+    classDef llm fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#fff;
+    classDef splunk fill:#111113,stroke:#ec4899,stroke-width:2px,color:#fff;
+
+    %% Nodes
+    User((👨‍💻 Developer)):::user
+    UI[🖥️ Streamlit App<br/>Prisme UI]:::frontend
+    LangChain[🧠 LangChain Agent<br/>agent_brain.py]:::brain
+    Ollama[(🤖 Ollama Cloud<br/>gpt-oss:120b)]:::llm
+    Connector[🔌 Splunk Connector<br/>REST API Payload Builder]:::brain
+    Splunk[(🔥 Splunk Enterprise<br/>Local Engine port 8089)]:::splunk
+
+    %% Edges / Data Flow
+    User -- "1. Inputs Raw Logs/Code" --> UI
+    UI -- "2. Triggers Analysis" --> LangChain
+    LangChain -- "3. Injects Prompt & Payload" --> Ollama
+    Ollama -- "4. Returns Structured JSON<br/>(SPL, Regex, props.conf)" --> LangChain
+    LangChain -- "5. Displays Insights" --> UI
+    User -- "6. Clicks Deploy" --> UI
+    UI -- "7. Sends JSON Specs" --> Connector
+    Connector -- "8. POST Request<br/>(Creates SourceTypes & Dashboards)" --> Splunk
+    Splunk -- "9. 201 Created HTTP" --> Connector
+    Connector -- "10. Cinematic Success UI" --> UI
 ```
 
 ### Component Roles
