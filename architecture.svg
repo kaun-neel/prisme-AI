@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
+  <defs>
+    <!-- Background styling -->
+    <rect id="bg" width="100%" height="100%" fill="#1e1e1e"/>
+    
+    <!-- Box styling -->
+    <style>
+      .box { rx: 8; stroke-width: 2; }
+      .box-green { fill: #114e3b; stroke: #059669; } /* Frontend */
+      .box-purple { fill: #3b2c6e; stroke: #7c3aed; } /* AI Layer */
+      .box-brown { fill: #451a03; stroke: #b45309; } /* Splunk MCP */
+      .box-orange { fill: #7c2d12; stroke: #ea580c; } /* Splunk Core */
+      .text-title { fill: #ffffff; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; }
+      .text-sub { fill: #d1d5db; font-family: 'Inter', sans-serif; font-size: 12px; text-anchor: middle; }
+      .text-layer { fill: #9ca3af; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: bold; }
+      .arrow { stroke: #9ca3af; stroke-width: 2; fill: none; }
+      .arrow-dashed { stroke: #6b7280; stroke-width: 2; stroke-dasharray: 5,5; fill: none; }
+      .grid-line { stroke: #374151; stroke-width: 1; stroke-dasharray: 4,4; }
+    </style>
+    
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af"/>
+    </marker>
+    <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <use href="#bg" />
+
+  <!-- Layer Dividers -->
+  <line x1="150" y1="180" x2="900" y2="180" class="grid-line" />
+  <line x1="150" y1="360" x2="900" y2="360" class="grid-line" />
+
+  <!-- Layer Labels -->
+  <text x="70" y="100" class="text-layer">Frontend</text>
+  <text x="70" y="270" class="text-layer">AI layer</text>
+  <text x="70" y="450" class="text-layer">Splunk</text>
+
+  <!-- Frontend Nodes -->
+  <!-- 1. Code Input -->
+  <g transform="translate(180, 60)">
+    <rect width="200" height="70" class="box box-green" />
+    <text x="100" y="32" class="text-title">Code input</text>
+    <text x="100" y="52" class="text-sub">Paste any language</text>
+  </g>
+  
+  <!-- 2. Analysis Panel -->
+  <g transform="translate(430, 60)">
+    <rect width="200" height="70" class="box box-green" />
+    <text x="100" y="32" class="text-title">Analysis panel</text>
+    <text x="100" y="52" class="text-sub">SPL + dashboard + alerts</text>
+  </g>
+
+  <!-- 3. Export -->
+  <g transform="translate(680, 60)">
+    <rect width="200" height="70" class="box box-green" />
+    <text x="100" y="32" class="text-title">Export</text>
+    <text x="100" y="52" class="text-sub">Copy / push to Splunk</text>
+  </g>
+
+  <!-- AI Layer Nodes -->
+  <!-- 4. Code Analyzer -->
+  <g transform="translate(180, 230)">
+    <rect width="200" height="70" class="box box-purple" />
+    <text x="100" y="32" class="text-title">Code analyzer</text>
+    <text x="100" y="52" class="text-sub">Splunk hosted model</text>
+  </g>
+
+  <!-- 5. SPL Generator -->
+  <g transform="translate(430, 230)">
+    <rect width="200" height="70" class="box box-purple" />
+    <text x="100" y="32" class="text-title">SPL generator</text>
+    <text x="100" y="52" class="text-sub">Writes queries + alerts</text>
+  </g>
+
+  <!-- 6. Dashboard Builder -->
+  <g transform="translate(680, 230)">
+    <rect width="200" height="70" class="box box-purple" />
+    <text x="100" y="32" class="text-title">Dashboard builder</text>
+    <text x="100" y="52" class="text-sub">JSON panel config</text>
+  </g>
+
+  <!-- Splunk MCP Nodes -->
+  <!-- 7. Splunk MCP server -->
+  <g transform="translate(180, 400)">
+    <rect width="200" height="70" class="box box-brown" />
+    <text x="100" y="32" class="text-title">Splunk MCP server</text>
+    <text x="100" y="52" class="text-sub">API bridge</text>
+  </g>
+
+  <!-- 8. SPL runner -->
+  <g transform="translate(430, 400)">
+    <rect width="200" height="70" class="box box-brown" />
+    <text x="100" y="32" class="text-title">SPL runner</text>
+    <text x="100" y="52" class="text-sub">Validates + executes</text>
+  </g>
+
+  <!-- 9. Dashboard deployer -->
+  <g transform="translate(680, 400)">
+    <rect width="200" height="70" class="box box-brown" />
+    <text x="100" y="32" class="text-title">Dashboard deployer</text>
+    <text x="100" y="52" class="text-sub">Pushes to Splunk UI</text>
+  </g>
+
+  <!-- Splunk Enterprise Node -->
+  <!-- 10. Splunk Core -->
+  <g transform="translate(330, 500)">
+    <rect width="400" height="70" class="box box-orange" />
+    <text x="200" y="32" class="text-title">Splunk Enterprise / Cloud</text>
+    <text x="200" y="52" class="text-sub">Indexes, dashboards, alerts</text>
+  </g>
+
+  <!-- Connections (Arrows) -->
+  
+  <!-- Row 1: Frontend -->
+  <path d="M 380 95 L 420 95" class="arrow" marker-end="url(#arrowhead)" />
+  <path d="M 630 95 L 670 95" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Vertical: Frontend to AI -->
+  <path d="M 280 130 L 280 220" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Row 2: AI Layer -->
+  <path d="M 380 265 L 420 265" class="arrow" marker-end="url(#arrowhead)" />
+  <path d="M 630 265 L 670 265" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Vertical: AI to Splunk layer -->
+  <path d="M 280 300 L 280 390" class="arrow-dashed" marker-end="url(#arrowhead-dashed)" />
+  <path d="M 530 300 L 530 390" class="arrow" marker-end="url(#arrowhead)" />
+  <path d="M 780 300 L 780 390" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Row 3: Splunk MCP Layer -->
+  <path d="M 380 435 L 420 435" class="arrow" marker-end="url(#arrowhead)" />
+  <path d="M 630 435 L 670 435" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Vertical: Splunk MCP to Enterprise -->
+  <!-- From MCP Server (Left) to Enterprise -->
+  <path d="M 280 470 L 330 520" class="arrow" marker-end="url(#arrowhead)" />
+  <!-- From SPL runner (Middle) to Enterprise -->
+  <path d="M 530 470 L 530 490" class="arrow" marker-end="url(#arrowhead)" />
+  <!-- From Dashboard deployer (Right) to Enterprise -->
+  <path d="M 780 470 L 730 520" class="arrow" marker-end="url(#arrowhead)" />
+
+  <!-- Optional explicit dashed link for the MCP connection directly from code input/UI -->
+  <path d="M 190 130 L 190 390" class="arrow-dashed" marker-end="url(#arrowhead-dashed)" />
+
+</svg>

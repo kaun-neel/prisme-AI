@@ -1,0 +1,6 @@
+.env
+demo_script.md
+venv/
+__pycache__/
+*.pyc
+.DS_Store
