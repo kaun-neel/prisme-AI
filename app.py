@@ -112,29 +112,32 @@ def render_header():
     ''', unsafe_allow_html=True)
 
 def page_input():
-    _, col, _ = st.columns([1, 2, 1])
-    with col:
-        render_header()
-        st.markdown('<p style="color: #d1d5db; font-size: 15px; margin-bottom: 20px;">Paste your application code. Prism will analyze it and auto-generate a complete Splunk instrumentation plan.</p>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="mac-window-header"><div class="mac-dot red"></div><div class="mac-dot yellow"></div><div class="mac-dot green"></div><span class="mac-title">application_code.py</span></div>', unsafe_allow_html=True)
-        
-        code = st.text_area(
-            "Code Input Area", 
-            height=400, 
-            label_visibility="collapsed",
-            placeholder="# Paste Python, Node.js, Go, or Java code here...\n\ndef process_checkout():\n    ...",
-            value=st.session_state.code_input
-        )
-        
-        st.markdown('<div class="btn-primary" style="margin-top: 20px;">', unsafe_allow_html=True)
-        analyze_btn = st.button("Analyze with Splunk Hosted Model →")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        if analyze_btn and code.strip():
-            st.session_state.code_input = code
-            st.session_state.current_page = 'processing'
-            st.rerun()
+    container = st.empty()
+    with container.container():
+        _, col, _ = st.columns([1, 2, 1])
+        with col:
+            render_header()
+            st.markdown('<p style="color: #d1d5db; font-size: 15px; margin-bottom: 20px;">Paste your application code. Prism will analyze it and auto-generate a complete Splunk instrumentation plan.</p>', unsafe_allow_html=True)
+            
+            st.markdown('<div class="mac-window-header"><div class="mac-dot red"></div><div class="mac-dot yellow"></div><div class="mac-dot green"></div><span class="mac-title">application_code.py</span></div>', unsafe_allow_html=True)
+            
+            code = st.text_area(
+                "Code Input Area", 
+                height=400, 
+                label_visibility="collapsed",
+                placeholder="# Paste Python, Node.js, Go, or Java code here...\n\ndef process_checkout():\n    ...",
+                value=st.session_state.code_input
+            )
+            
+            st.markdown('<div class="btn-primary" style="margin-top: 20px;">', unsafe_allow_html=True)
+            analyze_btn = st.button("Analyze with Splunk Hosted Model →")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            if analyze_btn and code.strip():
+                st.session_state.code_input = code
+                st.session_state.current_page = 'processing'
+                container.empty()
+                st.rerun()
 
 def page_processing():
     _, col, _ = st.columns([1, 2, 1])
@@ -151,99 +154,118 @@ def page_processing():
             "> Generating SPL queries and Alerts...",
             "> Compiling Dashboard JSON for MCP Server..."
         ]
-        for phase in phases:
-            terminal.markdown(f'<span style="font-family: \'JetBrains Mono\', monospace; color: #a1a1aa; font-size: 14px;">{phase}</span>', unsafe_allow_html=True)
-            time.sleep(0.7)
+
+        if 'proc_phase' not in st.session_state:
+            st.session_state.proc_phase = 0
             
-        st.session_state.analysis = analyze_code(st.session_state.code_input)
-        st.session_state.current_page = 'analysis'
-        st.rerun()
+        current = st.session_state.proc_phase
+
+        if current > 0 and current <= len(phases):
+            time.sleep(0.7)
+
+        if current < len(phases):
+            html_content = ""
+            for i in range(current + 1):
+                html_content += f'<span style="font-family: \'JetBrains Mono\', monospace; color: #a1a1aa; font-size: 14px;">{phases[i]}</span><br>'
+            terminal.markdown(html_content, unsafe_allow_html=True)
+            
+            st.session_state.proc_phase += 1
+            st.rerun()
+        else:
+            st.session_state.analysis = analyze_code(st.session_state.code_input)
+            st.session_state.current_page = 'analysis'
+            if 'proc_phase' in st.session_state: del st.session_state['proc_phase']
+            st.rerun()
 
 def page_analysis():
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        st.markdown('<div class="btn-back">', unsafe_allow_html=True)
-        back_btn = st.button("‹ Back to Input")
-        st.markdown('</div>', unsafe_allow_html=True)
+    container = st.empty()
+    with container.container():
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            st.markdown('<div class="btn-back">', unsafe_allow_html=True)
+            back_btn = st.button("‹ Back to Input")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            if back_btn:
+                st.session_state.current_page = 'input'
+                container.empty()
+                st.rerun()
         
-        if back_btn:
-            st.session_state.current_page = 'input'
-            st.rerun()
-    
-    render_header()
-    
-    data = st.session_state.analysis
-    
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["⚠️ Risk Areas", "🔍 SPL Queries", "🚨 Alerts", "📊 Dashboard Panels", "📝 Logging Recs"])
-    
-    with tab1:
-        st.markdown('<div class="analysis-card"><div class="card-title">Code-Level Risks Detected</div>', unsafe_allow_html=True)
-        for risk in data['risks']:
-            level = risk['level']
-            st.markdown(f'''
-                <div class="risk-item risk-{level}">
-                    <span class="badge badge-{level}">{level}</span>
-                    <span>{risk['message']}</span>
-                </div>
-            ''', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with tab2:
-        st.markdown('<div class="analysis-card"><div class="card-title">Ready-to-run SPL Queries</div>', unsafe_allow_html=True)
-        for spl in data['spl_queries']:
-            st.markdown(f'''
-                <div>
-                    <span class="spl-title">{spl['name']}</span>
-                    <span class="viz-tag">{spl['viz']}</span>
-                    <div class="spl-box">{spl['spl']}</div>
-                </div>
-            ''', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with tab3:
-        st.markdown('<div class="analysis-card"><div class="card-title">Recommended Alerts</div>', unsafe_allow_html=True)
-        for alert in data['alerts']:
-            level = alert['severity']
-            st.markdown(f'''
-                <div style="margin-bottom: 20px;">
-                    <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 8px;">
-                        <span class="badge badge-{level}">{level}</span>
-                        <span class="spl-title">{alert['name']}</span>
-                        <span style="color: #71717a; font-size: 13px;">Trigger: {alert['condition']}</span>
-                    </div>
-                    <div class="spl-box" style="margin-top: 0;">{alert['spl']}</div>
-                </div>
-            ''', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        render_header()
         
-    with tab4:
-        st.markdown('<div class="analysis-card"><div class="card-title">Generated Dashboard Configuration</div>', unsafe_allow_html=True)
-        cols = st.columns(2)
-        for i, panel in enumerate(data['dashboard_panels']):
-            with cols[i%2]:
+        data = st.session_state.analysis
+        
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["⚠️ Risk Areas", "🔍 SPL Queries", "🚨 Alerts", "📊 Dashboard Panels", "📝 Logging Recs"])
+        
+        with tab1:
+            st.markdown('<div class="analysis-card"><div class="card-title">Code-Level Risks Detected</div>', unsafe_allow_html=True)
+            for risk in data['risks']:
+                level = risk['level']
                 st.markdown(f'''
-                    <div style="background: #18181b; border: 1px solid #27272a; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                        <div style="color: #fafafa; font-weight: 500; font-size: 14px; margin-bottom: 4px;">{panel['title']}</div>
-                        <div style="color: #a1a1aa; font-size: 12px;">{panel['desc']}</div>
+                    <div class="risk-item risk-{level}">
+                        <span class="badge badge-{level}">{level}</span>
+                        <span>{risk['message']}</span>
                     </div>
                 ''', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    with tab5:
-        st.markdown('<div class="analysis-card"><div class="card-title">Instrumentation Recommendations</div>', unsafe_allow_html=True)
-        for rec in data['logging_recs']:
-            st.markdown(f'<div style="background: #111113; border-left: 3px solid #6366f1; padding: 12px 16px; margin-bottom: 12px; color: #d1d5db; font-size: 13px; font-family: \'JetBrains Mono\', monospace;">{rec}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with tab2:
+            st.markdown('<div class="analysis-card"><div class="card-title">Ready-to-run SPL Queries</div>', unsafe_allow_html=True)
+            for spl in data['spl_queries']:
+                st.markdown(f'''
+                    <div>
+                        <span class="spl-title">{spl['name']}</span>
+                        <span class="viz-tag">{spl['viz']}</span>
+                        <div class="spl-box">{spl['spl']}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    _, center, _ = st.columns([1, 2, 1])
-    with center:
-        st.markdown('<div class="btn-mcp">', unsafe_allow_html=True)
-        push_btn = st.button("Push Dashboard via Splunk MCP Server")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        if push_btn:
-            st.session_state.current_page = 'pushing'
-            st.rerun()
+        with tab3:
+            st.markdown('<div class="analysis-card"><div class="card-title">Recommended Alerts</div>', unsafe_allow_html=True)
+            for alert in data['alerts']:
+                level = alert['severity']
+                st.markdown(f'''
+                    <div style="margin-bottom: 20px;">
+                        <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 8px;">
+                            <span class="badge badge-{level}">{level}</span>
+                            <span class="spl-title">{alert['name']}</span>
+                            <span style="color: #71717a; font-size: 13px;">Trigger: {alert['condition']}</span>
+                        </div>
+                        <div class="spl-box" style="margin-top: 0;">{alert['spl']}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with tab4:
+            st.markdown('<div class="analysis-card"><div class="card-title">Generated Dashboard Configuration</div>', unsafe_allow_html=True)
+            cols = st.columns(2)
+            for i, panel in enumerate(data['dashboard_panels']):
+                with cols[i%2]:
+                    st.markdown(f'''
+                        <div style="background: #18181b; border: 1px solid #27272a; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="color: #fafafa; font-weight: 500; font-size: 14px; margin-bottom: 4px;">{panel['title']}</div>
+                            <div style="color: #a1a1aa; font-size: 12px;">{panel['desc']}</div>
+                        </div>
+                    ''', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with tab5:
+            st.markdown('<div class="analysis-card"><div class="card-title">Instrumentation Recommendations</div>', unsafe_allow_html=True)
+            for rec in data['logging_recs']:
+                st.markdown(f'<div style="background: #111113; border-left: 3px solid #6366f1; padding: 12px 16px; margin-bottom: 12px; color: #d1d5db; font-size: 13px; font-family: \'JetBrains Mono\', monospace;">{rec}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        col1, _ = st.columns([1, 3])
+        with col1:
+            st.markdown('<div class="btn-mcp">', unsafe_allow_html=True)
+            push_btn = st.button("Push Dashboard via Splunk MCP Server", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            if push_btn:
+                st.session_state.current_page = 'pushing'
+                container.empty()
+                st.rerun()
 
 def page_pushing():
     _, col, _ = st.columns([1, 2, 1])
@@ -258,20 +280,40 @@ def page_pushing():
             "> Validating SPL queries via MCP...",
             "> Deploying to Splunk Enterprise..."
         ]
-        for phase in phases:
-            terminal.markdown(f'<span style="font-family: \'JetBrains Mono\', monospace; color: #a1a1aa; font-size: 14px;">{phase}</span>', unsafe_allow_html=True)
-            time.sleep(0.8)
+
+        if 'push_phase' not in st.session_state:
+            st.session_state.push_phase = 0
             
-        success, msg = push_dashboard_via_mcp(st.session_state.analysis)
-        if success:
-            st.session_state.success_msg = msg
-            st.session_state.current_page = 'success'
+        current = st.session_state.push_phase
+
+        if current < len(phases):
+            # Hide any lingering buttons from previous pages while processing
+            st.markdown('<style>div[data-testid="stButton"] { display: none !important; }</style>', unsafe_allow_html=True)
+
+        if current > 0 and current <= len(phases):
+            time.sleep(0.8)
+
+        if current < len(phases):
+            html_content = ""
+            for i in range(current + 1):
+                html_content += f'<span style="font-family: \'JetBrains Mono\', monospace; color: #a1a1aa; font-size: 14px;">{phases[i]}</span><br>'
+            terminal.markdown(html_content, unsafe_allow_html=True)
+            
+            st.session_state.push_phase += 1
             st.rerun()
         else:
-            st.error(f"Deployment Failed: {msg}")
-            if st.button("‹ Back to Analysis"):
-                st.session_state.current_page = 'analysis'
+            success, msg = push_dashboard_via_mcp(st.session_state.analysis)
+            if success:
+                st.session_state.success_msg = msg
+                st.session_state.current_page = 'success'
+                if 'push_phase' in st.session_state: del st.session_state['push_phase']
                 st.rerun()
+            else:
+                st.error(f"Deployment Failed: {msg}")
+                if st.button("‹ Back to Analysis"):
+                    st.session_state.current_page = 'analysis'
+                    if 'push_phase' in st.session_state: del st.session_state['push_phase']
+                    st.rerun()
 
 def page_success():
     _, col, _ = st.columns([1, 2, 1])
@@ -286,19 +328,19 @@ def page_success():
             </div>
         ''', unsafe_allow_html=True)
         
-        st.markdown('<div class="btn-primary" style="margin-top: 20px;">', unsafe_allow_html=True)
-        restart_btn = st.button("Start New Analysis")
-        st.markdown('</div>', unsafe_allow_html=True)
+        _, btn_col, _ = st.columns([1, 2, 1])
+        with btn_col:
+            st.markdown('<div class="btn-primary" style="margin-top: 20px;">', unsafe_allow_html=True)
+            restart_btn = st.button("Start New Analysis", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         if restart_btn:
             st.session_state.current_page = 'input'
             st.session_state.code_input = ""
             st.rerun()
 
-placeholder = st.empty()
-with placeholder.container():
-    if st.session_state.current_page == 'input': page_input()
-    elif st.session_state.current_page == 'processing': page_processing()
-    elif st.session_state.current_page == 'analysis': page_analysis()
-    elif st.session_state.current_page == 'pushing': page_pushing()
-    elif st.session_state.current_page == 'success': page_success()
+if st.session_state.current_page == 'input': page_input()
+elif st.session_state.current_page == 'processing': page_processing()
+elif st.session_state.current_page == 'analysis': page_analysis()
+elif st.session_state.current_page == 'pushing': page_pushing()
+elif st.session_state.current_page == 'success': page_success()
